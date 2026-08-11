@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>手机补光灯</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main id="light-app" class="light-app" aria-label="手机补光灯">
+      <div class="light-layer" aria-hidden="true"></div>
+
+      <section id="controls" class="controls" aria-label="补光灯控制面板">
+        <header class="panel-header">
+          <div>
+            <p class="eyebrow">MOBILE FILL LIGHT</p>
+            <h1>手机补光灯</h1>
+          </div>
+          <button id="fullscreen-button" class="fullscreen-button" type="button" aria-label="进入全屏">
+            <span aria-hidden="true">⛶</span><span>全屏</span>
+          </button>
+        </header>
+
+        <div class="control-group">
+          <div class="group-title"><span>补光颜色</span><output id="color-value">#FFFFFF</output></div>
+          <div id="color-grid" class="color-grid" role="group" aria-label="选择补光颜色"></div>
+        </div>
+
+        <div class="control-group presets-group">
+          <div class="group-title"><span>补光预设</span></div>
+          <div id="preset-list" class="preset-list" role="group" aria-label="选择补光预设"></div>
+        </div>
+
+        <div class="control-group settings-row">
+          <label class="brightness-control" for="brightness">
+            <span class="group-title"><span>亮度</span><output id="brightness-value">100%</output></span>
+            <input id="brightness" type="range" min="25" max="100" value="100" aria-label="调节亮度" />
+          </label>
+          <label class="custom-color" for="custom-color">
+            <span>自定义颜色</span>
+            <input id="custom-color" type="color" value="#ffffff" aria-label="选择自定义颜色" />
+          </label>
+        </div>
+
+        <p class="hint">全屏后，轻触空白处可隐藏或显示控制面板</p>
+      </section>
+
+      <button id="show-controls" class="show-controls" type="button" aria-label="显示控制面板">显示控制</button>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
