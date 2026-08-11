@@ -23,6 +23,7 @@ const brightnessValue = document.querySelector('#brightness-value');
 const fullscreenButton = document.querySelector('#fullscreen-button');
 const fullscreenMessage = document.querySelector('#fullscreen-message');
 let messageTimer;
+let standalonePresentation = false;
 
 function makeButton(item, className) {
   const button = document.createElement('button');
@@ -63,6 +64,14 @@ function currentFullscreenElement() {
   return document.fullscreenElement || document.webkitFullscreenElement;
 }
 
+function isStandaloneApp() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function isFullscreenMode() {
+  return currentFullscreenElement() === app || standalonePresentation;
+}
+
 function notify(message) {
   fullscreenMessage.textContent = message;
   fullscreenMessage.classList.add('is-visible');
@@ -79,6 +88,14 @@ async function toggleFullscreen() {
       if (exit) await exit.call(document);
       return;
     }
+    // iPhone 主屏幕网页不会开放 Fullscreen API，但本身已没有浏览器地址栏。
+    // 在这里切换为纯色展示模式，使“全屏”按钮仍然可用。
+    if (isStandaloneApp()) {
+      standalonePresentation = !standalonePresentation;
+      updateFullscreenUI();
+      if (standalonePresentation) notify('已进入沉浸模式，轻触空白处可隐藏或显示控制面板。');
+      return;
+    }
     if (!request) {
       notify('当前浏览器不支持网页全屏。iPhone 请在 Safari 中“添加到主屏幕”后打开。');
       return;
@@ -91,7 +108,7 @@ async function toggleFullscreen() {
 }
 
 function updateFullscreenUI() {
-  const isFullscreen = currentFullscreenElement() === app;
+  const isFullscreen = isFullscreenMode();
   fullscreenButton.querySelector('span:last-child').textContent = isFullscreen ? '退出全屏' : '全屏';
   fullscreenButton.setAttribute('aria-label', isFullscreen ? '退出全屏' : '进入全屏');
   if (!isFullscreen) {
@@ -105,7 +122,7 @@ document.addEventListener('fullscreenchange', updateFullscreenUI);
 document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
 app.addEventListener('click', (event) => {
-  if (currentFullscreenElement() !== app || event.target.closest('button, input, label')) return;
+  if (!isFullscreenMode() || event.target.closest('button, input, label')) return;
   const hidden = controls.classList.toggle('is-hidden');
   showControls.classList.toggle('is-visible', hidden);
 });
