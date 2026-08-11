@@ -21,6 +21,8 @@ const customColor = document.querySelector('#custom-color');
 const brightness = document.querySelector('#brightness');
 const brightnessValue = document.querySelector('#brightness-value');
 const fullscreenButton = document.querySelector('#fullscreen-button');
+const fullscreenMessage = document.querySelector('#fullscreen-message');
+let messageTimer;
 
 function makeButton(item, className) {
   const button = document.createElement('button');
@@ -57,17 +59,39 @@ function setBrightness() {
 customColor.addEventListener('input', (event) => setColor(event.target.value));
 brightness.addEventListener('input', setBrightness);
 
+function currentFullscreenElement() {
+  return document.fullscreenElement || document.webkitFullscreenElement;
+}
+
+function notify(message) {
+  fullscreenMessage.textContent = message;
+  fullscreenMessage.classList.add('is-visible');
+  clearTimeout(messageTimer);
+  messageTimer = setTimeout(() => fullscreenMessage.classList.remove('is-visible'), 4200);
+}
+
 async function toggleFullscreen() {
+  const request = app.requestFullscreen || app.webkitRequestFullscreen;
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+
   try {
-    if (document.fullscreenElement) await document.exitFullscreen();
-    else await app.requestFullscreen();
+    if (currentFullscreenElement()) {
+      if (exit) await exit.call(document);
+      return;
+    }
+    if (!request) {
+      notify('当前浏览器不支持网页全屏。iPhone 请在 Safari 中“添加到主屏幕”后打开。');
+      return;
+    }
+    await request.call(app);
   } catch (error) {
     console.warn('无法进入全屏模式：', error);
+    notify('未能进入全屏。请尝试使用 Chrome、Edge 或系统浏览器打开。');
   }
 }
 
 function updateFullscreenUI() {
-  const isFullscreen = document.fullscreenElement === app;
+  const isFullscreen = currentFullscreenElement() === app;
   fullscreenButton.querySelector('span:last-child').textContent = isFullscreen ? '退出全屏' : '全屏';
   fullscreenButton.setAttribute('aria-label', isFullscreen ? '退出全屏' : '进入全屏');
   if (!isFullscreen) {
@@ -78,9 +102,10 @@ function updateFullscreenUI() {
 
 fullscreenButton.addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', updateFullscreenUI);
+document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
 app.addEventListener('click', (event) => {
-  if (document.fullscreenElement !== app || event.target.closest('button, input, label')) return;
+  if (currentFullscreenElement() !== app || event.target.closest('button, input, label')) return;
   const hidden = controls.classList.toggle('is-hidden');
   showControls.classList.toggle('is-visible', hidden);
 });
